@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Sfondo -->
+  <rect width="64" height="64" fill="#f8fafc" rx="8"/>
+  
+  <!-- Scudo (protezione/assicurazione) -->
+  <path d="M 32 10 L 48 18 L 48 32 C 48 44 32 54 32 54 C 32 54 16 44 16 32 L 16 18 Z" 
+        fill="#1d4ed8" stroke="#1e40af" stroke-width="1.5"/>
+  
+  <!-- Checkmark (protezione garantita) -->
+  <g transform="translate(32, 32)">
+    <path d="M -6 0 L -2 4 L 6 -4" 
+          stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

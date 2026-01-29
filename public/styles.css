@@ -48,12 +48,12 @@ body{
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.12);
 }
-.logo{
+.logo-icon{
   width:46px;height:46px;border-radius: 14px;
-  display:grid;place-items:center;
-  font-weight:900;
+  padding: 6px;
   background: rgba(255,255,255,.16);
   border:1px solid rgba(255,255,255,.18);
+  object-fit: contain;
 }
 .brand-title{ font-weight:900; font-size:15px; line-height:1.1; }
 .brand-subtitle{ font-size:12px; opacity:.8; margin-top:2px; }
