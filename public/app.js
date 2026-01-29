@@ -1,10 +1,36 @@
 /*************************
+ * 0. AUTH CHECK
+ *************************/
+async function checkAuth() {
+  try {
+    const res = await fetch('http://localhost:3000/api/session', { credentials: 'include' });
+    const data = await res.json();
+    if (!data.authenticated || data.user.role !== 'admin') {
+      window.location.href = '/login.html';
+      return;
+    }
+    // Mostra nome tenant
+    if (data.user.tenant_name) {
+      document.getElementById('tenantName').textContent = data.user.tenant_name;
+    }
+  } catch (error) {
+    window.location.href = '/login.html';
+  }
+}
+checkAuth();
+
+async function logout() {
+  await fetch('http://localhost:3000/api/logout', { method: 'POST', credentials: 'include' });
+  window.location.href = '/login.html';
+}
+
+/*************************
  * 1. DATABASE API (MYSQL)
  *************************/
 const DB = {
   get: async (table) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/${table}`);
+      const res = await fetch(`http://localhost:3000/api/${table}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Errore GET');
@@ -21,7 +47,8 @@ const DB = {
       const res = await fetch(`http://localhost:3000/api/${table}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item)
+        body: JSON.stringify(item),
+        credentials: 'include'
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -40,7 +67,8 @@ const DB = {
       const res = await fetch(`http://localhost:3000/api/${table}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newData)
+        body: JSON.stringify(newData),
+        credentials: 'include'
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -56,7 +84,8 @@ const DB = {
   delete: async (table, id) => {
     try {
       const res = await fetch(`http://localhost:3000/api/${table}/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Errore delete');
       return await res.json();
@@ -380,7 +409,8 @@ function handleForm(formId, table, renderFn) {
         
         const uploadRes = await fetch('http://localhost:3000/api/upload-pdf', {
           method: 'POST',
-          body: pdfFormData
+          body: pdfFormData,
+          credentials: 'include'
         });
         
         if (uploadRes.ok) {

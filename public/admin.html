@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Super Admin - Gestionale Assicurazioni</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .admin-header h2 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 32px;
+      font-weight: 700;
+    }
+    .section {
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      margin-bottom: 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .section h3 {
+      margin-bottom: 24px;
+      color: #2d3748;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+      transition: transform 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+    }
+    .stat-card h4 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      opacity: 0.9;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-card .value {
+      font-size: 36px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .form-row input, .form-row select {
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .form-row input:focus, .form-row select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .btn-primary {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    .btn-delete {
+      padding: 6px 12px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .btn-delete:hover {
+      background: #dc2626;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    th, td {
+      text-align: left;
+      padding: 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+    }
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    .success-message {
+      background: #dcfce7;
+      color: #166534;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .success-message.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Tab system - nasconde tab non attivi */
+    .tab {
+      display: none;
+    }
+    .tab.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    /* Sidebar footer e logout */
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 20px;
+    }
+    .logout-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    /* Content area con margini laterali aumentati */
+    .content {
+      flex: 1;
+      padding: 40px 60px;
+      overflow-y: auto;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="favicon.svg" alt="GA" class="logo-icon"/>
+        <div>
+          <div class="brand-title">Super Admin</div>
+          <div class="brand-subtitle">Gestione Tenant</div>
+        </div>
+      </div>
+      <nav class="menu">
+        <button class="menu-item active" data-tab="tenants-tab">Tenant</button>
+        <button class="menu-item" data-tab="users-tab">Utenti Admin</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <!-- TENANT TAB -->
+      <div id="tenants-tab" class="tab active">
+        <div class="admin-header">
+          <h2>📊 Gestione Tenant</h2>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h4>Totale Tenant</h4>
+            <p class="value" id="totalTenants">0</p>
+          </div>
+          <div class="stat-card">
+            <h4>Totale Utenti Admin</h4>
+            <p class="value" id="totalUsers">0</p>
+          </div>
+        </div>
+
+        <div class="success-message" id="tenantSuccess"></div>
+
+        <div class="section">
+          <h3>➕ Crea Nuovo Tenant</h3>
+          <form id="createTenantForm">
+            <div class="form-row">
+              <input type="text" name="nome" placeholder="Nome Tenant (es: Agenzia Roma)" required />
+              <button type="submit" class="btn-primary">Crea Tenant</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="section">
+          <h3>📋 Lista Tenant</h3>
+          <table id="tenantsTableContainer">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome Tenant</th>
+                <th>Data Creazione</th>
+                <th>N° Utenti</th>
+              </tr>
+            </thead>
+            <tbody id="tenantsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- USERS TAB -->
+      <div id="users-tab" class="tab">
+        <div class="admin-header">
+          <h2>👥 Gestione Utenti Admin</h2>
+        </div>
+
+        <div class="success-message" id="userSuccess"></div>
+
+        <div class="section">
+          <h3>➕ Crea Nuovo Utente Admin</h3>
+          <form id="createUserForm">
+            <div class="form-row">
+              <select name="tenant_id" id="tenantSelect" required>
+                <option value="">Seleziona Tenant</option>
+              </select>
+              <input type="text" name="username" placeholder="Username" required />
+              <input type="password" name="password" placeholder="Password (min 6 caratteri)" required minlength="6" />
+            </div>
+            <div class="form-row">
+              <input type="text" name="nome" placeholder="Nome" required />
+              <input type="text" name="cognome" placeholder="Cognome" required />
+              <input type="email" name="email" placeholder="Email (opzionale)" />
+              <button type="submit" class="btn-primary">Crea Utente Admin</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="section">
+          <h3>📋 Lista Utenti Admin</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Tenant</th>
+                <th>Username</th>
+                <th>Nome Completo</th>
+                <th>Email</th>
+                <th>Creato</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Verifica autenticazione
+    async function checkAuth() {
+      const res = await fetch('/api/session', { credentials: 'include' });
+      const data = await res.json();
+      if (!data.authenticated || data.user.role !== 'super_admin') {
+        window.location.href = '/login.html';
+      }
+    }
+    checkAuth();
+
+    // Logout
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/login.html';
+    }
+
+    // Tab navigation
+    document.querySelectorAll('.menu-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Load tenants
+    async function loadTenants() {
+      const res = await fetch('/api/tenants', { credentials: 'include' });
+      const tenants = await res.json();
+      
+      // Update stats
+      document.getElementById('totalTenants').textContent = tenants.length;
+      
+      const tbody = document.getElementById('tenantsTable');
+      if (tenants.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Nessun tenant creato</td></tr>';
+      } else {
+        tbody.innerHTML = tenants.map(t => `
+          <tr>
+            <td>${t.id}</td>
+            <td><strong>${t.nome}</strong></td>
+            <td>${new Date(t.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+            <td>${t.user_count || 0}</td>
+          </tr>
+        `).join('');
+      }
+
+      const select = document.getElementById('tenantSelect');
+      select.innerHTML = '<option value="">Seleziona Tenant</option>' + 
+        tenants.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
+    }
+
+    // Load users
+    async function loadUsers() {
+      const res = await fetch('/api/admin-users', { credentials: 'include' });
+      const users = await res.json();
+      
+      // Update stats
+      document.getElementById('totalUsers').textContent = users.length;
+      
+      const tbody = document.getElementById('usersTable');
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Nessun utente creato</td></tr>';
+      } else {
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td><strong>${u.tenant_name || 'N/A'}</strong></td>
+            <td>${u.username}</td>
+            <td>${u.nome} ${u.cognome}</td>
+            <td>${u.email || '<em>-</em>'}</td>
+            <td>${new Date(u.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // Show success message
+    function showSuccess(elementId, message) {
+      const el = document.getElementById(elementId);
+      el.textContent = message;
+      el.style.display = 'block';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 4000);
+    }
+
+    // Create tenant
+    document.getElementById('createTenantForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      
+      const res = await fetch('/api/tenants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: formData.get('nome') }),
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        showSuccess('tenantSuccess', '✅ Tenant creato con successo!');
+        e.target.reset();
+        loadTenants();
+      } else {
+        const err = await res.json();
+        alert('❌ Errore: ' + err.error);
+      }
+    });
+
+    // Create user
+    document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      
+      const res = await fetch('/api/admin-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        showSuccess('userSuccess', '✅ Utente admin creato con successo!');
+        e.target.reset();
+        loadUsers();
+      } else {
+        const err = await res.json();
+        alert('❌ Errore: ' + err.error);
+      }
+    });
+
+    // Init
+    loadTenants();
+    loadUsers();
+  </script>
+</body>
+</html>
