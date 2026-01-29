@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestionale Assicurazioni</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">GA</div>
+        <div>
+          <div class="brand-title">Gestionale Assicurazioni</div>
+          <div class="brand-subtitle">Clienti • Aziende • Compagnie • Polizze</div>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <button class="menu-item active" data-tab="dashboard">Dashboard</button>
+        <button class="menu-item" data-tab="clients">Clienti</button>
+        <button class="menu-item" data-tab="businesses">Aziende</button>
+        <button class="menu-item" data-tab="companies">Compagnie</button>
+        <button class="menu-item" data-tab="policies">Polizze</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="hint">
+          <b>MySQL</b> Connected<br/>
+          I dati sono salvati in <b>database</b>.
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div>
+          <h1 class="title" id="pageTitle">Dashboard</h1>
+          <p class="subtitle" id="pageSubtitle">Scadenze nei prossimi 30 giorni e stato polizze.</p>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <section id="tab-dashboard" class="tab card">
+        <div class="table-head">
+          <div class="table-title">Scadenze prossimi 30 giorni</div>
+          <input type="text" id="dashboardSearch" class="search-input" placeholder="Cerca..." />
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Stato</th>
+                <th>Targa</th>
+                <th>Codice</th>
+                <th>Compagnia</th>
+                <th>Contraente</th>
+                <th>Data emissione</th>
+                <th>Data scadenza</th>
+                <th>PDF</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardBody"></tbody>
+          </table>
+        </div>
+        <div class="table-empty hidden" id="dashboardEmpty">
+          Nessuna polizza in scadenza nei prossimi 30 giorni.
+        </div>
+      </section>
+
+      <!-- CLIENTI -->
+      <section id="tab-clients" class="tab card hidden table-card">
+        <div class="table-head">
+          <div class="table-title">Clienti</div>
+          <input type="text" id="clientsSearch" class="search-input" placeholder="Cerca..." />
+          <div class="table-tools">
+            <button class="btn btn-primary" id="btnNewClient">+ Nuovo cliente</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Data di Nascita</th>
+                <th>Codice Fiscale</th>
+                <th>Indirizzo</th>
+                <th>P.IVA</th>
+                <th>Email</th>
+                <th>Telefono</th>
+                <th class="right">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="clientsBody"></tbody>
+          </table>
+        </div>
+        <div class="table-empty hidden" id="clientsEmpty">
+          Nessun cliente. Premi "Nuovo cliente".
+        </div>
+      </section>
+
+      <!-- AZIENDE -->
+      <section id="tab-businesses" class="tab card hidden table-card">
+        <div class="table-head">
+          <div class="table-title">Aziende</div>
+          <input type="text" id="businessesSearch" class="search-input" placeholder="Cerca..." />
+          <div class="table-tools">
+            <button class="btn btn-primary" id="btnNewBusiness">+ Nuova azienda</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Amministratore</th>
+                <th>Indirizzo</th>
+                <th>P.IVA</th>
+                <th class="right">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="businessesBody"></tbody>
+          </table>
+        </div>
+        <div class="table-empty hidden" id="businessesEmpty">
+          Nessuna azienda. Premi "Nuova azienda".
+        </div>
+      </section>
+
+      <!-- COMPAGNIE -->
+      <section id="tab-companies" class="tab card hidden table-card">
+        <div class="table-head">
+          <div class="table-title">Compagnie Assicurative</div>
+          <input type="text" id="companiesSearch" class="search-input" placeholder="Cerca..." />
+          <div class="table-tools">
+            <button class="btn btn-primary" id="btnNewCompany">+ Nuova compagnia</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Indirizzo</th>
+                <th class="right">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="companiesBody"></tbody>
+          </table>
+        </div>
+        <div class="table-empty hidden" id="companiesEmpty">
+          Nessuna compagnia. Premi "Nuova compagnia".
+        </div>
+      </section>
+
+      <!-- POLIZZE -->
+      <section id="tab-policies" class="tab card hidden table-card">
+        <div class="table-head">
+          <div class="table-title">Polizze</div>
+          <input type="text" id="policiesSearch" class="search-input" placeholder="Cerca..." />
+          <div class="table-tools">
+            <button class="btn btn-primary" id="btnNewPolicy">+ Nuova polizza</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Stato</th>
+                <th>Targa</th>
+                <th>Codice</th>
+                <th>Compagnia</th>
+                <th>Contraente</th>
+                <th>Data Emissione</th>
+                <th>Data Scadenza</th>
+                <th>PDF</th>
+                <th class="right">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="policiesBody"></tbody>
+          </table>
+        </div>
+        <div class="table-empty hidden" id="policiesEmpty">
+          Nessuna polizza. Premi "Nuova polizza".
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL CLIENTE -->
+  <div class="modal hidden" id="clientModal">
+    <div class="modal-backdrop" data-close="client"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="clientModalTitle">Nuovo Cliente</h3>
+        <button class="icon-btn" data-close="client">✕</button>
+      </div>
+      <form id="clientForm">
+        <div class="modal-body">
+          <div class="grid">
+            <div class="field">
+              <label for="client_nome">Nome</label>
+              <input id="client_nome" name="nome" required />
+            </div>
+            <div class="field">
+              <label for="client_cognome">Cognome</label>
+              <input id="client_cognome" name="cognome" required />
+            </div>
+            <div class="field">
+              <label for="client_birth_date">Data di nascita</label>
+              <input id="client_birth_date" name="birth_date" type="date" required />
+            </div>
+            <div class="field">
+              <label for="client_cf">Codice Fiscale</label>
+              <input id="client_cf" name="cf" required />
+            </div>
+            <div class="field">
+              <label for="client_indirizzo">Indirizzo</label>
+              <input id="client_indirizzo" name="indirizzo" />
+            </div>
+            <div class="field">
+              <label for="client_piva">Partita IVA</label>
+              <input id="client_piva" name="piva" />
+            </div>
+            <div class="field">
+              <label for="client_email">Email</label>
+              <input id="client_email" name="email" type="email" />
+            </div>
+            <div class="field">
+              <label for="client_telefono">Telefono</label>
+              <input id="client_telefono" name="telefono" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="client">Annulla</button>
+          <button type="submit" class="btn btn-primary">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL AZIENDA -->
+  <div class="modal hidden" id="businessModal">
+    <div class="modal-backdrop" data-close="business"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="businessModalTitle">Nuova Azienda</h3>
+        <button class="icon-btn" data-close="business">✕</button>
+      </div>
+      <form id="businessForm">
+        <div class="modal-body">
+          <div class="grid">
+            <div class="field">
+              <label for="business_nome">Nome Azienda</label>
+              <input id="business_nome" name="nome" required />
+            </div>
+            <div class="field">
+              <label for="business_amministratore">Amministratore</label>
+              <input id="business_amministratore" name="amministratore" required />
+            </div>
+            <div class="field">
+              <label for="business_indirizzo">Indirizzo</label>
+              <input id="business_indirizzo" name="indirizzo" />
+            </div>
+            <div class="field">
+              <label for="business_piva">Partita IVA</label>
+              <input id="business_piva" name="piva" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="business">Annulla</button>
+          <button type="submit" class="btn btn-primary">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL COMPAGNIA -->
+  <div class="modal hidden" id="companyModal">
+    <div class="modal-backdrop" data-close="company"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="companyModalTitle">Nuova Compagnia</h3>
+        <button class="icon-btn" data-close="company">✕</button>
+      </div>
+      <form id="companyForm">
+        <div class="modal-body">
+          <div class="grid">
+            <div class="field">
+              <label for="company_nome">Nome Compagnia</label>
+              <input id="company_nome" name="nome" required />
+            </div>
+            <div class="field" style="grid-column:1 / -1;">
+              <label for="company_indirizzo">Indirizzo</label>
+              <input id="company_indirizzo" name="indirizzo" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="company">Annulla</button>
+          <button type="submit" class="btn btn-primary">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL POLIZZA -->
+  <div class="modal hidden" id="policyModal">
+    <div class="modal-backdrop" data-close="policy"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="policyModalTitle">Nuova Polizza</h3>
+        <button class="icon-btn" data-close="policy">✕</button>
+      </div>
+      <form id="policyForm">
+        <div class="modal-body">
+          <div class="grid">
+            <div class="field">
+              <label for="policy_targa">Targa</label>
+              <input id="policy_targa" name="targa" required />
+            </div>
+            <div class="field">
+              <label for="policy_code">Codice Polizza</label>
+              <input id="policy_code" name="policy_code" required />
+            </div>
+            <div class="field" style="grid-column:1 / -1; position:relative;">
+              <label for="holderSearch">Contraente (Cliente o Azienda)</label>
+              <input id="holderSearch" placeholder="Cerca..." autocomplete="off" required />
+              <div id="holderResults" class="client-results hidden"></div>
+              <input id="holder_id" name="holder_id" type="hidden" />
+              <input id="holder_type" name="holder_type" type="hidden" />
+            </div>
+            <div class="field">
+              <label for="policy_company_id">Compagnia</label>
+              <select id="policy_company_id" name="company_id" required>
+                <option value="">Seleziona...</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="policy_data_emissione">Data Emissione</label>
+              <input id="policy_data_emissione" name="data_emissione" type="date" required />
+            </div>
+            <div class="field">
+              <label for="policy_data_scadenza">Data Scadenza</label>
+              <input id="policy_data_scadenza" name="data_scadenza" type="date" required />
+            </div>
+            <div class="field" style="grid-column:1 / -1;">
+              <label for="policy_pdf_polizza_file">PDF Polizza</label>
+              <input id="policy_pdf_polizza_file" name="pdf_file" type="file" accept=".pdf" />
+              <div id="policy_pdf_current" style="font-size:12px; color:#666; margin-top:4px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="policy">Annulla</button>
+          <button type="submit" class="btn btn-primary">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

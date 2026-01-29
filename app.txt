@@ -1,0 +1,468 @@
+/*************************
+ * 1. FAKE DATABASE (LOCAL STORAGE)
+ *************************/
+const DB = {
+  get: (table) => JSON.parse(localStorage.getItem(table) || "[]"),
+  save: (table, data) => localStorage.setItem(table, JSON.stringify(data)),
+  
+  insert: (table, item) => {
+    const list = DB.get(table);
+    item.id = Date.now(); 
+    item.created_at = new Date().toISOString().split('T')[0];
+    list.push(item);
+    DB.save(table, list);
+    return item;
+  },
+
+  update: (table, id, newData) => {
+    let list = DB.get(table);
+    const index = list.findIndex(x => x.id == id);
+    if (index !== -1) {
+      // Mantiene l'ID vecchio, sovrascrive i dati
+      list[index] = { ...list[index], ...newData, id: id };
+      DB.save(table, list);
+    }
+  },
+
+  delete: (table, id) => {
+    let list = DB.get(table);
+    list = list.filter(x => x.id != id);
+    DB.save(table, list);
+  }
+};
+
+/*************************
+ * 2. STATE & INIT
+ *************************/
+let currentEditingId = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupNavigation();
+  setupModals();
+  setupForms();
+  loadAllData();
+});
+
+/*************************
+ * 3. NAVIGATION (TABS)
+ *************************/
+function setupNavigation() {
+  const buttons = document.querySelectorAll(".menu-item");
+  const tabs = document.querySelectorAll(".tab");
+
+  buttons.forEach(btn => {
+    btn.onclick = () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      tabs.forEach(t => t.classList.add("hidden"));
+
+      btn.classList.add("active");
+      const targetId = `tab-${btn.dataset.tab}`;
+      document.getElementById(targetId).classList.remove("hidden");
+      document.getElementById("pageTitle").innerText = btn.innerText;
+      
+      if(btn.dataset.tab === 'dashboard') renderDashboard();
+    };
+  });
+}
+
+/*************************
+ * 4. LOAD DATA (RENDER)
+ *************************/
+function loadAllData() {
+  renderClients();
+  renderBusinesses();
+  renderCompanies();
+  renderPolicies();
+  renderDashboard();
+}
+
+// --- CLIENTI ---
+function renderClients() {
+  const list = DB.get("clients");
+  const tbody = document.getElementById("clientsBody");
+  const empty = document.getElementById("clientsEmpty");
+  
+  tbody.innerHTML = "";
+  if (!list.length) { empty.classList.remove("hidden"); return; }
+  empty.classList.add("hidden");
+
+  list.forEach(c => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${c.nome} ${c.cognome}</td>
+      <td>${c.cf}</td>
+      <td>${c.indirizzo || "-"}</td>
+      <td>${c.piva || "-"}</td>
+      <td>${c.email || "-"}</td>
+      <td>${c.telefono || "-"}</td>
+      <td class="right row-actions">
+        <button class="btn" style="padding:6px 10px;" onclick="editItem('clients', ${c.id})">✏️</button>
+        <button class="btn btn-danger" style="padding:6px 10px;" onclick="deleteItem('clients', ${c.id})">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- AZIENDE ---
+function renderBusinesses() {
+  const list = DB.get("businesses");
+  const tbody = document.getElementById("businessesBody");
+  const empty = document.getElementById("businessesEmpty");
+
+  tbody.innerHTML = "";
+  if (!list.length) { empty.classList.remove("hidden"); return; }
+  empty.classList.add("hidden");
+
+  list.forEach(b => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${b.biz_nome}</td>
+      <td>${b.biz_admin}</td>
+      <td>${b.biz_indirizzo || "-"}</td>
+      <td>${b.biz_piva || "-"}</td>
+      <td class="right row-actions">
+        <button class="btn" style="padding:6px 10px;" onclick="editItem('businesses', ${b.id})">✏️</button>
+        <button class="btn btn-danger" style="padding:6px 10px;" onclick="deleteItem('businesses', ${b.id})">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- COMPAGNIE ---
+function renderCompanies() {
+  const list = DB.get("companies");
+  const tbody = document.getElementById("companiesBody");
+  const empty = document.getElementById("companiesEmpty");
+  const select = document.getElementById("companySelect");
+
+  tbody.innerHTML = "";
+  select.innerHTML = '<option value="">Seleziona...</option>';
+
+  if (!list.length) { empty.classList.remove("hidden"); return; }
+  empty.classList.add("hidden");
+
+  list.forEach(c => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${c.comp_nome}</td>
+      <td>${c.comp_indirizzo || "-"}</td>
+      <td class="right row-actions">
+        <button class="btn" style="padding:6px 10px;" onclick="editItem('companies', ${c.id})">✏️</button>
+        <button class="btn btn-danger" style="padding:6px 10px;" onclick="deleteItem('companies', ${c.id})">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+
+    const opt = document.createElement("option");
+    opt.value = c.comp_nome;
+    opt.innerText = c.comp_nome;
+    select.appendChild(opt);
+  });
+}
+
+// --- POLIZZE ---
+function renderPolicies() {
+  const list = DB.get("policies");
+  const tbody = document.getElementById("policiesBody");
+  const empty = document.getElementById("policiesEmpty");
+
+  tbody.innerHTML = "";
+  if (!list.length) { empty.classList.remove("hidden"); return; }
+  empty.classList.add("hidden");
+
+  list.forEach(p => {
+    const status = getPolicyStatus(p.data_scadenza);
+    const badgeClass = status === 'active' ? 'ok' : (status === 'warning' ? 'warn' : 'danger');
+    const badgeText = status === 'active' ? 'ATTIVA' : (status === 'warning' ? 'IN SCADENZA' : 'SCADUTA');
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+      <td>${p.targa}</td>
+      <td>${p.codice_polizza}</td>
+      <td>${p.companySelect}</td>
+      <td>${p.contraente_nome}</td>
+      <td>${p.has_pdf ? "📄" : "-"}</td>
+      <td>${formatDate(p.data_emissione)}</td>
+      <td>${formatDate(p.data_scadenza)}</td>
+      <td class="right row-actions">
+        <button class="btn" style="padding:6px 10px;" onclick="editItem('policies', ${p.id})">✏️</button>
+        <button class="btn btn-danger" style="padding:6px 10px;" onclick="deleteItem('policies', ${p.id})">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- DASHBOARD ---
+function renderDashboard() {
+  const policies = DB.get("policies");
+  const tbody = document.getElementById("dashboardBody");
+  const empty = document.getElementById("dashboardEmpty");
+  tbody.innerHTML = "";
+
+  const today = new Date();
+  const limit = new Date();
+  limit.setDate(today.getDate() + 30);
+
+  const filtered = policies.filter(p => {
+    const d = new Date(p.data_scadenza);
+    return d >= today && d <= limit;
+  });
+
+  if (filtered.length === 0) {
+    empty.classList.remove("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+
+  filtered.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="badge warn">IN SCADENZA</span></td>
+      <td>${p.targa}</td>
+      <td>${p.codice_polizza}</td>
+      <td>${p.companySelect}</td>
+      <td>${p.contraente_nome}</td>
+      <td>${formatDate(p.data_emissione)}</td>
+      <td>${formatDate(p.data_scadenza)}</td>
+      <td>${p.has_pdf ? "📄" : "-"}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/*************************
+ * 5. MODALS & FORMS
+ *************************/
+function setupModals() {
+  document.getElementById("btnNewClient").onclick = () => openModal("client");
+  document.getElementById("btnNewBusiness").onclick = () => openModal("business");
+  document.getElementById("btnNewCompany").onclick = () => openModal("company");
+  document.getElementById("btnNewPolicy").onclick = () => openModal("policy");
+
+  document.querySelectorAll("[data-close]").forEach(el => {
+    el.onclick = () => {
+      document.getElementById(el.dataset.close + "Modal").classList.add("hidden");
+    };
+  });
+}
+
+function openModal(type) {
+  currentEditingId = null; 
+  document.getElementById(type + "Form").reset();
+  
+  if(type === 'policy') {
+    setInput('contraente_id', '');
+    setInput('contraente_type', '');
+  }
+
+  const titles = {
+    client: "Nuovo cliente", business: "Nuova azienda",
+    company: "Nuova compagnia", policy: "Nuova polizza"
+  };
+  if(document.getElementById(type + "ModalTitle")) {
+    document.getElementById(type + "ModalTitle").innerText = titles[type];
+  }
+  
+  document.getElementById(type + "Modal").classList.remove("hidden");
+}
+
+function setupForms() {
+  handleForm("clientForm", "clients", renderClients);
+  handleForm("businessForm", "businesses", renderBusinesses);
+  handleForm("companyForm", "companies", renderCompanies);
+  handleForm("policyForm", "policies", renderPolicies);
+
+  const holderInput = document.getElementById("holderSearch");
+  if(holderInput) {
+    holderInput.addEventListener("input", (e) => searchHolder(e.target.value));
+  }
+}
+
+function handleForm(formId, table, renderFn) {
+  document.getElementById(formId).onsubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+
+    // --- NUOVO CONTROLLO DATE ---
+    if (table === 'policies') {
+        const emissione = new Date(data.data_emissione);
+        const scadenza = new Date(data.data_scadenza);
+        
+        if (emissione > scadenza) {
+            alert("Errore: La data di emissione non può essere successiva alla data di scadenza!");
+            return; // Blocca il salvataggio
+        }
+
+        // Dummy PDF check
+        const fileInput = document.getElementById('pdf_polizza');
+        data.has_pdf = fileInput.files.length > 0;
+        delete data.pdf_polizza; 
+    }
+    // -----------------------------
+
+    if (currentEditingId) {
+      DB.update(table, currentEditingId, data);
+    } else {
+      DB.insert(table, data);
+    }
+
+    const modalId = formId.replace("Form", "Modal");
+    document.getElementById(modalId).classList.add("hidden");
+    renderFn();
+    renderDashboard();
+  };
+}
+
+// --- AZIONI (Edit / Delete) ---
+window.editItem = function(table, id) {
+  const item = DB.get(table).find(x => x.id == id);
+  if (!item) return;
+
+  currentEditingId = id;
+
+  // Mappa esplicita per evitare errori di nomi
+  const map = {
+      'clients': 'client',
+      'businesses': 'business',
+      'companies': 'company',
+      'policies': 'policy'
+  };
+  const type = map[table]; 
+  
+  // Popola i campi del form
+  Object.keys(item).forEach(key => {
+    setInput(key, item[key]);
+  });
+  
+  // Gestione speciale per polizze
+  if(table === 'policies') {
+      setInput('holderSearch', item.contraente_nome);
+      ensureHiddenField('contraente_id', item.contraente_id);
+      ensureHiddenField('contraente_type', item.contraente_type);
+      ensureHiddenField('contraente_nome', item.contraente_nome);
+  }
+
+  // Titolo modale
+  const titleEl = document.getElementById(type + "ModalTitle");
+  if(titleEl) titleEl.innerText = "Modifica " + type;
+
+  // Apre il modale corretto
+  document.getElementById(type + "Modal").classList.remove("hidden");
+};
+
+// --- ELIMINAZIONE PROTETTA ---
+window.deleteItem = function(table, id) {
+  const policies = DB.get("policies");
+  let errorMessage = null;
+
+  if (table === 'clients') {
+    const hasPolicy = policies.some(p => p.contraente_id == id && p.contraente_type == 'client');
+    if (hasPolicy) errorMessage = "Impossibile eliminare: questo cliente ha delle polizze attive.";
+  }
+  else if (table === 'businesses') {
+    const hasPolicy = policies.some(p => p.contraente_id == id && p.contraente_type == 'business');
+    if (hasPolicy) errorMessage = "Impossibile eliminare: questa azienda ha delle polizze attive.";
+  }
+  else if (table === 'companies') {
+    const company = DB.get("companies").find(c => c.id == id);
+    if (company) {
+      const hasPolicy = policies.some(p => p.companySelect === company.comp_nome);
+      if (hasPolicy) errorMessage = "Impossibile eliminare: ci sono polizze associate a questa compagnia.";
+    }
+  }
+
+  if (errorMessage) {
+    alert("⚠️ " + errorMessage + "\n\nElimina prima le polizze associate.");
+    return;
+  }
+
+  if (confirm("Sei sicuro di voler eliminare questo elemento definitivamente?")) {
+    DB.delete(table, id);
+    loadAllData();
+  }
+};
+
+/*************************
+ * 6. UTILS & SEARCH
+ *************************/
+function searchHolder(query) {
+  const resultsBox = document.getElementById("holderResults");
+  resultsBox.innerHTML = "";
+  if (query.length < 2) { resultsBox.classList.add("hidden"); return; }
+
+  const clients = DB.get("clients");
+  const businesses = DB.get("businesses");
+
+  const foundClients = clients.filter(c => 
+    (c.nome + " " + c.cognome).toLowerCase().includes(query.toLowerCase()) || 
+    c.cf.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const foundBiz = businesses.filter(b => 
+    b.biz_nome.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const all = [...foundClients.map(c => ({...c, type: 'client'})), ...foundBiz.map(b => ({...b, type: 'business'}))];
+
+  if(all.length === 0) { resultsBox.classList.add("hidden"); return; }
+
+  resultsBox.classList.remove("hidden");
+  
+  all.forEach(item => {
+    const div = document.createElement("div");
+    const isClient = item.type === 'client';
+    
+    const label = isClient
+      ? `👤 ${item.nome} ${item.cognome} (${item.cf})` 
+      : `🏢 ${item.biz_nome} (P.IVA: ${item.biz_piva})`;
+      
+    div.innerText = label;
+    div.onclick = () => {
+      document.getElementById("holderSearch").value = label;
+      
+      ensureHiddenField("contraente_id", item.id);
+      ensureHiddenField("contraente_type", item.type);
+      ensureHiddenField("contraente_nome", label);
+
+      resultsBox.classList.add("hidden");
+    };
+    resultsBox.appendChild(div);
+  });
+}
+
+function ensureHiddenField(name, value) {
+  let field = document.querySelector(`#policyForm input[name="${name}"]`);
+  if (!field) {
+    field = document.createElement("input");
+    field.type = "hidden";
+    field.name = name;
+    document.getElementById("policyForm").appendChild(field);
+  }
+  field.value = value || "";
+}
+
+function setInput(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val || "";
+}
+
+function getPolicyStatus(dateStr) {
+  const today = new Date();
+  const target = new Date(dateStr);
+  const diffTime = target - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return "expired";
+  if (diffDays <= 30) return "warning";
+  return "active";
+}
+
+function formatDate(isoStr) {
+  if (!isoStr) return "";
+  return isoStr.split('-').reverse().join('/');
+}
