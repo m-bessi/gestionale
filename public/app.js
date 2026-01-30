@@ -281,6 +281,7 @@ async function renderPolicies() {
       <td>${holderName}</td>
       <td>${formatDate(p.data_emissione)}</td>
       <td>${formatDate(p.data_scadenza)}</td>
+      <td>€ ${parseFloat(p.premio || 0).toFixed(2)}</td>
       <td>${pdfLink}</td>
       <td class="right row-actions">
         <button class="btn" style="padding:6px 10px;" onclick="editItem('policies', ${p.id})">✏️</button>

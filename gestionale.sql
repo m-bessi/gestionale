@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS policies (
   company_id INT NOT NULL,
   data_emissione DATE NOT NULL,
   data_scadenza DATE NOT NULL,
+  premio DECIMAL(10, 2) DEFAULT 0.00,
   pdf_polizza_name VARCHAR(255),
 
   INDEX idx_targa (targa),

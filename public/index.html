@@ -178,6 +178,7 @@
                 <th>Contraente</th>
                 <th>Data Emissione</th>
                 <th>Data Scadenza</th>
+                <th>Premio</th>
                 <th>PDF</th>
                 <th class="right">Azioni</th>
               </tr>
@@ -350,6 +351,10 @@
             <div class="field">
               <label for="policy_data_scadenza">Data Scadenza</label>
               <input id="policy_data_scadenza" name="data_scadenza" type="date" required />
+            </div>
+            <div class="field">
+              <label for="policy_premio">Premio Assicurativo (€)</label>
+              <input id="policy_premio" name="premio" type="number" step="0.01" min="0" placeholder="0.00" />
             </div>
             <div class="field" style="grid-column:1 / -1;">
               <label for="policy_pdf_polizza_file">PDF Polizza</label>
